@@ -20,7 +20,7 @@ export default function BlogPage() {
           </div>
           <h2 className="text-2xl font-bold text-white mb-3">Coming Soon</h2>
           <p className="text-white/60 mb-6 max-w-md text-center">
-            We're currently writing some amazing content for our learners. Check back soon for our first blog post!
+            We&apos;re currently writing some amazing content for our learners. Check back soon for our first blog post!
           </p>
           <Link href="/" className="text-accent hover:text-accent-light font-medium">
             ← Return to Home

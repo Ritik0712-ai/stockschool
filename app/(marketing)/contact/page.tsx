@@ -12,7 +12,7 @@ export default function ContactPage() {
       <div className="container-max max-w-3xl text-center">
         <h1 className="text-4xl font-heading font-bold text-white mb-6">Contact Us</h1>
         <p className="text-lg text-white/70 mb-12">
-          Have a question or found a bug? We'd love to hear from you.
+          Have a question or found a bug? We&apos;d love to hear from you.
         </p>
         
         <div className="grid sm:grid-cols-2 gap-6">

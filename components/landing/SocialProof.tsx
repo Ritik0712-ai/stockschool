@@ -122,6 +122,7 @@ export default function SocialProof() {
                 <div
                   className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center overflow-hidden`}
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
                 </div>
                 <div>
