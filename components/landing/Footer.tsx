@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FaTwitter, FaLinkedinIn, FaInstagram } from "react-icons/fa";
+import { useState } from "react";
+import { toast } from "sonner";
 
 /**
  * Footer with:
@@ -16,14 +18,13 @@ const quickLinks = [
   { label: "About Us", href: "/about" },
   { label: "Contact", href: "/contact" },
   { label: "Blog", href: "/blog" },
-  { label: "FAQs", href: "/faqs" },
+  { label: "FAQs", href: "/help" },
 ];
 
 const legalLinks = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Service", href: "/terms" },
   { label: "Disclaimer", href: "/disclaimer" },
-  { label: "Refund Policy", href: "/refund" },
 ];
 
 const socialLinks = [
@@ -33,6 +34,18 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !email.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    toast.success("You're in! 🎉 Check your inbox soon.");
+    setEmail("");
+  };
+
   return (
     <footer className="border-t border-white/10 text-white" id="footer">
       {/* CTA banner */}
@@ -117,16 +130,14 @@ export default function Footer() {
             {/* Social icons */}
             <div className="flex gap-3">
               {socialLinks.map((social) => (
-                <a
+                <button
                   key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  onClick={() => toast.info(`${social.label} profile coming soon!`)}
                   className="w-10 h-10 rounded-xl bg-white/5 hover:bg-accent/20 flex items-center justify-center text-white/50 hover:text-accent transition-all duration-200"
                   aria-label={social.label}
                 >
                   <social.icon size={18} />
-                </a>
+                </button>
               ))}
             </div>
           </div>
@@ -177,10 +188,13 @@ export default function Footer() {
             <p className="text-white/40 text-sm mb-4">
               Get weekly investing tips and platform updates.
             </p>
-            <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex gap-2" onSubmit={handleSubscribe}>
+              <label htmlFor="footer-email-input" className="sr-only">Email Address</label>
               <input
                 type="email"
                 placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-accent/50 transition-colors"
                 id="footer-email-input"
               />

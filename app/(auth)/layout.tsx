@@ -17,7 +17,10 @@ export default function AuthLayout({
       <div className="absolute inset-0 dot-pattern opacity-30" />
 
       {/* Minimal header with just logo */}
-      <header className="relative z-10 px-4 sm:px-6 lg:px-8 py-6">
+      <header className="relative z-10 px-4 sm:px-6 lg:px-8 py-6 flex flex-col items-start gap-4">
+        <Link href="/" className="text-white/50 hover:text-white text-sm font-medium transition-colors">
+          &larr; Back to home
+        </Link>
         <Link href="/" className="inline-flex items-center gap-2 group">
           <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
             <svg

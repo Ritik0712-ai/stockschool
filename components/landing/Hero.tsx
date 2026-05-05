@@ -62,7 +62,7 @@ export default function Hero() {
 
             <p className="mt-6 text-lg sm:text-xl text-white/60 max-w-xl mx-auto lg:mx-0 leading-relaxed">
               Master stocks through jargon-free lessons + risk-free paper
-              trading. Built for Indians who want to grow wealth, not gamble it.
+              trading. <span className="text-white font-medium">Built for Indians who want to grow wealth, not gamble it.</span>
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">

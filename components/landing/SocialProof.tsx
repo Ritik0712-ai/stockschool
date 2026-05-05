@@ -14,7 +14,7 @@ const testimonials = [
   {
     name: "Priya Sharma",
     location: "Mumbai, Maharashtra",
-    initials: "PS",
+    avatar: "https://api.dicebear.com/7.x/notionists/svg?seed=Priya",
     color: "from-pink-400 to-rose-500",
     quote:
       "I was always scared of the stock market. StockSchool made it so simple — I completed my first SIP within 2 weeks of joining!",
@@ -23,7 +23,7 @@ const testimonials = [
   {
     name: "Arjun Patel",
     location: "Ahmedabad, Gujarat",
-    initials: "AP",
+    avatar: "https://api.dicebear.com/7.x/notionists/svg?seed=Arjun",
     color: "from-blue-400 to-indigo-500",
     quote:
       "The paper trading simulator is genius. I practiced for a month before putting in real money. Now my portfolio is up 18% in 6 months.",
@@ -32,7 +32,7 @@ const testimonials = [
   {
     name: "Sneha Reddy",
     location: "Hyderabad, Telangana",
-    initials: "SR",
+    avatar: "https://api.dicebear.com/7.x/notionists/svg?seed=Sneha",
     color: "from-accent to-teal-500",
     quote:
       "Finally, a platform that doesn't assume I know what a 'bull market' is. The step-by-step learning path is exactly what I needed.",
@@ -81,9 +81,8 @@ export default function SocialProof() {
             Trusted by Beginners
           </span>
           <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">
-            Join{" "}
-            <span className="text-accent">1,000+ Indians</span>{" "}
-            building wealth
+            Join our{" "}
+            <span className="text-accent">early beta</span> community
           </h2>
           <p className="mt-4 text-gray-500 max-w-2xl mx-auto text-lg">
             Real stories from real people who started their investing journey
@@ -119,11 +118,11 @@ export default function SocialProof() {
 
               {/* Author */}
               <div className="flex items-center gap-3">
-                {/* Avatar with initials */}
+                {/* Avatar with image */}
                 <div
-                  className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white text-sm font-bold`}
+                  className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center overflow-hidden`}
                 >
-                  {t.initials}
+                  <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <p className="font-semibold text-primary text-sm">
@@ -145,10 +144,10 @@ export default function SocialProof() {
           className="mt-12 sm:mt-16 grid grid-cols-2 sm:grid-cols-4 gap-4"
         >
           {[
-            { value: "1,000+", label: "Active Learners" },
-            { value: "50+", label: "Lessons" },
-            { value: "₹10Cr+", label: "Virtual Traded" },
-            { value: "4.8/5", label: "Avg Rating" },
+            { value: "Beta", label: "Status" },
+            { value: "10+", label: "Lessons" },
+            { value: "₹10L", label: "Virtual Cash" },
+            { value: "100%", label: "Free Forever" },
           ].map((stat) => (
             <div
               key={stat.label}

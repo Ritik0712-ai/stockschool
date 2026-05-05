@@ -22,7 +22,7 @@ const navLinks = [
   { label: "Home", href: "/" },
   { label: "Learn", href: "#features" },
   { label: "Trade", href: "#how-it-works" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "Curriculum", href: "#features" },
 ];
 
 const authNavLinks = [

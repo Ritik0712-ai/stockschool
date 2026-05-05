@@ -17,6 +17,13 @@ import Footer from "@/components/landing/Footer";
  * The Navbar is rendered persistently via the root layout.
  */
 
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "StockSchool — Learn Investing Without Losing Money",
+  description: "India's friendliest investment education platform. Master stocks through jargon-free lessons and risk-free paper trading with ₹10 Lakh virtual cash.",
+};
+
 export default function Home() {
   return (
     <>
