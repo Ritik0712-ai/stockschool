@@ -1,0 +1,185 @@
+// StockSchool Prisma Schema
+// PostgreSQL datasource with NextAuth-compatible models
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// Core User Model
+// ==========================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?   // hashed with bcryptjs (null for OAuth users)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts Account[]
+  sessions Session[]
+  profile  Profile?
+  progress Progress[]
+  portfolio Portfolio?
+  watchlists Watchlist[]
+}
+
+// ==========================================
+// User Profile (Onboarding Data)
+// ==========================================
+
+model Profile {
+  id               String  @id @default(cuid())
+  userId           String  @unique
+  age              Int?
+  riskTolerance    String? // "low" | "medium" | "high"
+  investmentGoal   String? // "wealth" | "retirement" | "learning"
+  knowledgeLevel   String? // "beginner" | "intermediate" | "advanced"
+  completedLessons Json    @default("[]")
+  onboardingDone   Boolean @default(false)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// NextAuth Required Models
+// ==========================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ==========================================
+// Phase 3: Learning Module Models
+// ==========================================
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  level       String   // beginner, intermediate, advanced
+  order       Int
+  lessons     Lesson[]
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  courseId    String
+  title       String
+  content     String   @db.Text
+  videoUrl    String?
+  duration    Int      // minutes
+  order       Int
+  quiz        Quiz?
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  lessonId    String   @unique
+  questions   Json     // array of questions
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+}
+
+model Progress {
+  id              String    @id @default(cuid())
+  userId          String
+  lessonId        String
+  completed       Boolean   @default(false)
+  quizScore       Int?
+  completedAt     DateTime?
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, lessonId])
+}
+
+// ==========================================
+// Phase 4: Paper Trading Models
+// ==========================================
+
+model Portfolio {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  virtualCash     Float    @default(1000000) // ₹10L starting
+  totalValue      Float    @default(1000000)
+  holdings        Holding[]
+  transactions    Transaction[]
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Holding {
+  id              String   @id @default(cuid())
+  portfolioId     String
+  symbol          String   // TCS.NS, RELIANCE.NS
+  quantity        Int
+  avgBuyPrice     Float
+  currentPrice    Float?
+  portfolio       Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  
+  @@unique([portfolioId, symbol])
+}
+
+model Transaction {
+  id              String   @id @default(cuid())
+  portfolioId     String
+  symbol          String
+  type            String   // BUY, SELL
+  quantity        Int
+  price           Float
+  total           Float
+  timestamp       DateTime @default(now())
+  notes           String?  // User's reason for trade
+  portfolio       Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+}
+
+model Watchlist {
+  id              String   @id @default(cuid())
+  userId          String
+  symbol          String
+  addedAt         DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, symbol])
+}
