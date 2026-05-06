@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
+import AIAssistant from "@/components/ui/AIAssistant";
 
 /**
  * Protected pages layout.
@@ -19,5 +20,10 @@ export default async function ProtectedLayout({
     redirect("/login");
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <AIAssistant />
+    </>
+  );
 }
