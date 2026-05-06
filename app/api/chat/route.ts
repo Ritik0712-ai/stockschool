@@ -26,16 +26,24 @@ export async function POST(req: Request) {
     const { messages } = await req.json();
 
     const result = streamText({
-      model: google("gemini-1.5-pro-latest"),
+      model: google("gemini-2.0-flash", {
+        apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
+      }),
       system: systemPrompt,
       messages,
       tools: {
         getStockData: tool({
-          description: "Fetch the current price, previous close, and company details for a given Indian stock symbol (e.g., 'RELIANCE.NS', 'TCS.NS').",
+          description:
+            "Fetch the current price, previous close, and company details for a given Indian stock symbol (e.g., 'RELIANCE.NS', 'TCS.NS').",
           parameters: z.object({
-            symbol: z.string().describe("The stock symbol to fetch data for. Must include the exchange suffix (e.g., '.NS')."),
+            symbol: z
+              .string()
+              .describe(
+                "The stock symbol to fetch data for. Must include the exchange suffix (e.g., '.NS')."
+              ),
           }),
-          execute: async ({ symbol }) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          execute: async ({ symbol }: { symbol: string }) => {
             try {
               const quote = await getQuote(symbol);
               const profile = await getCompanyProfile(symbol);
@@ -54,11 +62,12 @@ export async function POST(req: Request) {
               return { error: `Failed to fetch data for ${symbol}` };
             }
           },
-        }),
+        }) as any,
       },
     });
 
-    return result.toDataStreamResponse();
+    // ai SDK v6: use toTextStreamResponse for plain text streaming
+    return result.toTextStreamResponse();
   } catch (error) {
     console.error("Chat API Error:", error);
     return new Response(JSON.stringify({ error: "Failed to process chat" }), {
