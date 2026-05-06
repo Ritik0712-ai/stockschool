@@ -1,20 +1,109 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useChat } from "@ai-sdk/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HiOutlineSparkles, HiOutlinePaperAirplane, HiOutlineChevronDown, HiUser } from "react-icons/hi";
-import ReactMarkdown from "react-markdown";
+
+interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}
 
 export default function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const userMessage = input.trim();
+    if (!userMessage || isLoading) return;
+
+    // Cancel any ongoing request
+    if (abortRef.current) {
+      abortRef.current.abort();
+    }
+
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: userMessage,
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setIsLoading(true);
+
+    // Add placeholder assistant message
+    const assistantId = (Date.now() + 1).toString();
+    setMessages((prev) => [
+      ...prev,
+      userMsg,
+      { id: assistantId, role: "assistant", content: "" },
+    ]);
+
+    abortRef.current = new AbortController();
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [...messages, userMsg].map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+        signal: abortRef.current.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) throw new Error("No response body");
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantId
+              ? { ...m, content: m.content + chunk }
+              : m
+          )
+        );
+      }
+    } catch (err: unknown) {
+      if ((err as Error).name === "AbortError") return;
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantId
+            ? {
+                ...m,
+                content:
+                  "Sorry, I'm having trouble responding right now. Please try again.",
+              }
+            : m
+        )
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
@@ -90,34 +179,20 @@ export default function AIAssistant() {
                           : "bg-accent/20 text-accent"
                       }`}
                     >
-                      {m.role === "user" ? <HiUser size={16} /> : <HiOutlineSparkles size={16} />}
+                      {m.role === "user" ? (
+                        <HiUser size={16} />
+                      ) : (
+                        <HiOutlineSparkles size={16} />
+                      )}
                     </div>
                     <div
-                      className={`px-4 py-2.5 rounded-2xl max-w-[80%] text-sm ${
+                      className={`px-4 py-2.5 rounded-2xl max-w-[80%] text-sm whitespace-pre-wrap break-words ${
                         m.role === "user"
                           ? "bg-white/10 text-white rounded-tr-none"
-                          : "bg-accent/10 border border-accent/20 text-white/90 rounded-tl-none prose prose-invert prose-p:leading-relaxed prose-pre:bg-black/20 prose-pre:p-2"
+                          : "bg-accent/10 border border-accent/20 text-white/90 rounded-tl-none"
                       }`}
                     >
-                      {/* For tool calls, show a small pill */}
-                      {m.toolInvocations?.map((toolInvocation) => {
-                        if (toolInvocation.state === "result") {
-                          return (
-                            <div key={toolInvocation.toolCallId} className="mb-2 text-xs text-accent-light flex items-center gap-1 bg-accent/10 px-2 py-1 rounded-md border border-accent/20 w-fit">
-                              <HiOutlineSparkles size={12} />
-                              Analyzed {toolInvocation.args.symbol}
-                            </div>
-                          );
-                        } else {
-                          return (
-                            <div key={toolInvocation.toolCallId} className="mb-2 text-xs text-white/50 flex items-center gap-1">
-                              <span className="w-3 h-3 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
-                              Fetching data...
-                            </div>
-                          );
-                        }
-                      })}
-                      <ReactMarkdown>{m.content}</ReactMarkdown>
+                      {m.content || (m.role === "assistant" && isLoading ? "Thinking..." : "")}
                     </div>
                   </div>
                 ))
@@ -139,14 +214,11 @@ export default function AIAssistant() {
 
             {/* Input Area */}
             <div className="p-3 bg-white/5 border-t border-white/10">
-              <form
-                onSubmit={handleSubmit}
-                className="relative flex items-center"
-              >
+              <form onSubmit={handleSubmit} className="relative flex items-center">
                 <input
                   type="text"
                   value={input}
-                  onChange={handleInputChange}
+                  onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask me anything..."
                   className="w-full pl-4 pr-12 py-3 rounded-xl bg-black/20 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-accent/50 transition-colors"
                   disabled={isLoading}
@@ -161,7 +233,9 @@ export default function AIAssistant() {
                 </button>
               </form>
               <div className="text-center mt-2">
-                <span className="text-[10px] text-white/30">AI can make mistakes. Verify important information.</span>
+                <span className="text-[10px] text-white/30">
+                  AI can make mistakes. Verify important information.
+                </span>
               </div>
             </div>
           </motion.div>

@@ -62,6 +62,7 @@ export async function POST(req: Request) {
               return { error: `Failed to fetch data for ${symbol}` };
             }
           },
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         }) as any,
       },
     });
